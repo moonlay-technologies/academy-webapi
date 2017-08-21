@@ -528,14 +528,14 @@ module.exports = function(Report) {
             } 
             temp = null;
             Promise.all(promiseTask).then( results=>{
-                for(var r of results){
-                    if(r.projectId!=null){
+                for(var r of results)
+                    {
+                    if(r.projectId!=null)
+                        {
                         temp = app.models.Project.findOne({where: {id: r.projectId}});
                         promiseProject.push(temp);  
                     }
                 }
-                console.log("task");
-                console.log(results);
                 Promise.all(promiseProject).then(results => {
                     var out = [];
                     for (var i = 0, l = results.length; i < l; i++) {
