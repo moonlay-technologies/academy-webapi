@@ -87,5 +87,13 @@
   "Me": {
     "dataSource": null,
     "public": true
+  },
+  "aboutus": {
+    "dataSource": "db",
+    "public": true
+  },
+  "member": {
+    "dataSource": "mongodb-ds",
+    "public": true
   }
 }

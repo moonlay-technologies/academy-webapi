@@ -26,7 +26,7 @@ module.exports = function(Me) {
         var userId = accessToken.userId;
         var f = typeof filter === "string" ? JSON.parse(filter) : {};
 
-        f.where = {
+        f.where = {     
             "and": [{
                 accountId: userId
             }, f.where]

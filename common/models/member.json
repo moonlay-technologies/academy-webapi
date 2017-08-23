@@ -1,31 +1,35 @@
 {
-  "name": "Timerecord",
-  "base": "BaseModel",
+  "name": "member",
+  "plural": "members",
+  "base": "PersistedModel",
   "idInjection": true,
   "options": {
     "validateUpsert": true
   },
   "properties": {
-    "date": {
-      "type": "date",
+    "id": {
+      "type": "number",
       "required": true
     },
     "name": {
       "type": "string",
       "required": true
     },
-    "duration": {
-      "type": "number",
+    "address": {
+      "type": "string",
       "required": true
     },
     "description": {
-      "type": "string"
+      "type": "string",
+      "required": true
     },
-    "remark": {
-      "type": "string"
+    "start": {
+      "type": "date",
+      "required": true
     },
-    "status": {
-      "type": "string"
+    "stop": {
+      "type": "date",
+      "required": true
     }
   },
   "validations": [],
