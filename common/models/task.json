@@ -48,6 +48,10 @@
     "close": {
       "type": "date"
     },
+    "deadline": {
+      "type": "date",
+      "required": true
+    },
     "status": {
       "type": "string",
       "default": ""

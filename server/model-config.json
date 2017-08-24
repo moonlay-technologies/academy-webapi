@@ -88,12 +88,8 @@
     "dataSource": null,
     "public": true
   },
-  "aboutus": {
-    "dataSource": "db",
-    "public": true
-  },
-  "member": {
-    "dataSource": "mongodb-ds",
-    "public": true
+  "Report": {
+      "dataSource": null,
+      "public": true
   }
 }
