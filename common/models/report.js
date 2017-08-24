@@ -764,10 +764,12 @@ module.exports = function(Report) {
     })
 
     Report.getDataInThisMonth = function(account_id,cb){
-        var date = new Date(date_start);
-        var end_date = new Date(date_start);
-        var start_date = date;
+        var date = new Date();
+        var end_date = new Date(date);
+        end_date.setDate(date.getDate());
 
+        var start_date = date;
+        start_date.setDate(1);
         app.models.Assignment.find (
             {
                 where:
@@ -791,7 +793,7 @@ module.exports = function(Report) {
                 // console.log("start : "+start_date.getMonth()+"\n end : "+end_date.getMonth());
 
                 for(var i = 1;i<=date.getDate();i++){
-                    days.push(+i);
+                    days.push(""+i);
                     var temBudget = 0 ;
                     var temElapsed = 0;
                     var temTotalAssignment = 0;
