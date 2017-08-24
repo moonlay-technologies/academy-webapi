@@ -32,32 +32,40 @@ module.exports = function (Assignment) {
             returns: { arg: "Persentasi", type: "object" }
         });
 
-    Assignment.assignmentSubtraction = function (id, cb) {
-        app.models.Assignment.findById(id, { include: 'timerecords' },
-            function (err, assignments) {
-                if (err)
-                    return cb(err);
-                else {
-                    var diffDays = 0.0;
-                    var totalDeadline = 0.0;
-                    var date2 =  new Date (assignments.deadline)//assignments.deadline
-                    var date = new Date()
-                    var time = 0.0;
-                    console.log(date)
-                    console.log(date2.getTime())
-                    
-                    if (assignments.deadline != 0) {
-                        totalDeadline = Math.abs(date2 - date);
-                        diffDays = Math.ceil(totalDeadline / (3600 * 1000 * 24)) ;
-                        time = Math.ceil(diffDays * 8)+ " hours more";
-                        console.log("Deadline:" + time)
-                        console.log("id: " + assignments.id)
-                        cb(null, time);
-                    }
-                };
-            });
-
-    };
+        Assignment.assignmentSubtraction = function (id, cb) {
+            app.models.Assignment.findById(id, { include: 'timerecords' },
+                function (err, assignments) {
+                    if (err)
+                        return cb(err);
+                    else {
+                        var diffDays = 0.0;
+                        var distance = 0.0;
+                        var end = new Date(assignments.deadline)//assignments.deadline
+                        var _second = 1000;
+                        var _minute = _second * 60;
+                        var _hour = _minute * 60;
+                        var _day = _hour * 24;
+                        var now = new Date()
+                        var keterangan = 0.0;
+                        distance = (end - now);
+                        if (distance < 0) {
+                            keterangan = "Expired"
+                            cb(null, keterangan)
+    
+                        }
+                        else {
+                            var days = Math.floor(distance / _day);
+                            var hours = Math.floor((distance % _day) / _hour);
+                            var minutes = Math.floor((distance % _hour) / _minute);
+                            var seconds = Math.floor((distance % _minute) / _second);
+                            keterangan = days + " " + "days" + " " + hours + " " + "hours" + " " + "more"
+                            cb(null, keterangan)
+    
+                        }
+                    };
+                });
+    
+        };
 
     Assignment.remoteMethod("assignmentSubtraction",
         {
