@@ -8,6 +8,7 @@
     "posttest": "npm run lint && nsp check"
   },
   "dependencies": {
+    "bl": "^1.2.1",
     "compression": "^1.0.3",
     "cookie-parser": "^1.4.3",
     "cors": "^2.5.2",
@@ -21,14 +22,17 @@
     "loopback-component-passport": "^3.2.0",
     "loopback-connector-mongodb": "^1.18.0",
     "moment": "^2.17.1",
+    "ms": "^2.0.0",
     "passport-facebook": "^2.1.1",
     "passport-google": "^0.3.0",
     "passport-google-oauth": "^1.0.0",
     "passport-local": "^1.0.0",
     "passport-oauth2": "^1.4.0",
     "passport-twitter": "^1.0.4",
+    "process-nextick-args": "^1.0.7",
     "serve-favicon": "^2.0.1",
-    "strong-error-handler": "^1.0.1"
+    "strong-error-handler": "^1.0.1",
+    "util-deprecate": "^1.0.2"
   },
   "devDependencies": {
     "eslint": "^2.13.1",

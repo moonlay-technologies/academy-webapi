@@ -1,5 +1,5 @@
 'use strict';
 
-module.exports = function(Timerecord) {
-
+module.exports = function (Timerecord) {
+    
 };

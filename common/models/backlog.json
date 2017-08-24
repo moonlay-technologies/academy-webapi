@@ -31,6 +31,10 @@
       "type": "string",
       "default": ""
     },
+    "deadline": {
+      "type": "date",
+      "required": true
+    },
     "status": {
       "type": "string",
       "required": true,

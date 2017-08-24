@@ -7,7 +7,7 @@
     "host": "ds159767.mlab.com",
     "port": 59767,
     "url": "mongodb://moonlay:Standar123@ds159767.mlab.com:59767/academy-dev",
-    "database": "academy-dev",
+    "database": "academy-dev",                  
     "password": "Standar123",
     "name": "mongodb-ds",
     "user": "moonlay",
