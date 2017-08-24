@@ -219,7 +219,7 @@ module.exports = function(Report) {
             if((sumBudget!=null&&sumBudget!=0) && (sumElapsed!=null&&sumElapsed!=0)){
                 efficiency = (((sumBudget)/(sumElapsed/3600))*100).toFixed(2);
             }else{
-                efficiency = 0;
+                efficiency = "-";
             }
             cb(null, efficiency);
         }
@@ -628,7 +628,7 @@ module.exports = function(Report) {
             }, 0);
             var efficiency= 0;
             if((sumBudget!=null&&sumBudget!=0) && (sumElapsed!=null&&sumElapsed!=0)){
-                efficiency = (((sumBudget*360)/sumElapsed)*100).toFixed(2);
+                efficiency = (((sumBudget)/(sumElapsed/3600))*100).toFixed(2);
             }else{
                 efficiency = 0;
             }
