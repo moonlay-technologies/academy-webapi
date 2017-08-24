@@ -174,7 +174,7 @@ module.exports = function(Report) {
                 return d.budget + last;
             }, 0);
             if(sumBudget!=0&&sumElapsed!=0){
-                efficiency = ((sumBudget/sumElapsed)*100).toFixed(2);
+                efficiency = ((sumBudget/(sumElapsed/3600))*100).toFixed(2);
             }else{
                 efficiency = " - "
             }
@@ -217,7 +217,7 @@ module.exports = function(Report) {
             }, 0);
             var efficiency = 0;
             if((sumBudget!=null&&sumBudget!=0) && (sumElapsed!=null&&sumElapsed!=0)){
-                efficiency = (((sumBudget*360)/sumElapsed)*100).toFixed(2);
+                efficiency = (((sumBudget)/(sumElapsed/3600))*100).toFixed(2);
             }else{
                 efficiency = 0;
             }
@@ -294,9 +294,7 @@ module.exports = function(Report) {
         if(err || account_id === 0)
             return cb(err);
         else {
-            var counts = []
-            counts.push(count);
-            cb(null, counts);
+            cb(null, count);
         }
         }) 
     };
@@ -461,7 +459,7 @@ module.exports = function(Report) {
                 where: {accountId: account_id}},function(err, assignments){
         if(err || account_id === 0)
            return cb(err);
-        else {
+        else { 
             var promiseTask = []; 
             var promiseProject = [];    
             var temp;          
@@ -687,6 +685,159 @@ module.exports = function(Report) {
         description: ["menghitung assignment yang melewati deadline."],
         returns: {arg: "coumnt", type: "object",root: true}
     })
+
+    ///////////////////////////dipanggil untuk data di chart///////////////////////////////////////////////
+    Report.getDataInLatestSixMonths = function(account_id,date_start,cb){
+        var date = new Date(date_start);
+        var end_date = new Date(date_start);
+
+        date.setMonth(date.getMonth()-5);
+        var start_date = date;
+
+        app.models.Assignment.find (
+            {
+                where:
+                {accountId: account_id,
+            date:{
+                between: [start_date, end_date]
+            }}},
+            function(err, assignments){
+        if(err || account_id === 0)
+            return cb(err);
+        else {
+            var monthNames = ["January", "February", "March", "April", "May", "June",
+                "July", "August", "September", "October", "November", "December"];
+            var months=[];
+            var budget = [];
+            var elapsed = [];
+            var totalAssignment = [];
+            var efficiency = [];
+
+                // console.log("start : "+start_date.getMonth()+"\n end : "+end_date.getMonth());
+
+                for(var i = start_date.getMonth();i<=end_date.getMonth();i++){
+                    months.push(monthNames[i]);
+                    var temBudget = 0 ;
+                    var temElapsed = 0;
+                    var temTotalAssignment = 0;
+                    var temEfficiency = 0;
+                    for(var a of assignments){
+                        var tempDate = new Date(a.date);
+                        if(tempDate.getMonth()==i){
+                            temTotalAssignment += 1;
+                            temBudget += a.budget;
+                            temElapsed += a.elapsed;
+                            temEfficiency = (temBudget/(temElapsed/3600))    
+                            // console.log("ini hasilnya "+tempDate)
+
+                        }
+                        // var sumBudget = assignments.reduce(function(last, d) {
+                        //     return d.budget + last;
+                        // }, 0);
+                    }
+                    budget.push(temBudget);
+                    elapsed.push(((temElapsed)/3600).toFixed(2));
+                    totalAssignment.push(temTotalAssignment)
+                    efficiency.push(temEfficiency);
+                }
+            
+                var data = {
+                "months":months,
+                "value":
+                    {
+                        "budget":budget,
+                        "elapsed":elapsed,
+                        "efficiency":efficiency
+                    },
+                "totalAssignment":totalAssignment    
+            }
+            cb(null, data);
+        }
+        }) 
+    };
+    Report.remoteMethod("getDataInLatestSixMonths",
+    {
+        accepts: [{ arg: 'account_id', type: 'string'},{ arg: 'date_start', type: 'string'}],
+        http: { path:"/account/:account_id/:date_start/data/sixmonths", verb: "get", errorStatus: 401,},
+        description: ["Get data untuk line chart per enam bulan terakhir."],
+        returns: {arg: "data", type: "object",root:"true"}
+    })
+
+    Report.getDataInThisMonth = function(account_id,cb){
+        var date = new Date(date_start);
+        var end_date = new Date(date_start);
+        var start_date = date;
+
+        app.models.Assignment.find (
+            {
+                where:
+                {accountId: account_id,
+            date:{
+                between: [start_date, end_date]
+            }}},
+            function(err, assignments){
+        if(err || account_id === 0)
+            return cb(err);
+        else {
+            var days = []
+            var monthNames = ["January", "February", "March", "April", "May", "June",
+                "July", "August", "September", "October", "November", "December"];
+            var months=[];
+            var budget = [];
+            var elapsed = [];
+            var totalAssignment = [];
+            var efficiency = [];
+
+                // console.log("start : "+start_date.getMonth()+"\n end : "+end_date.getMonth());
+
+                for(var i = 1;i<=date.getDate();i++){
+                    days.push(+i);
+                    var temBudget = 0 ;
+                    var temElapsed = 0;
+                    var temTotalAssignment = 0;
+                    var temEfficiency = 0;
+                    for(var a of assignments){
+                        var tempDate = new Date(a.date);
+                        if(tempDate.getDate()==i){
+                            temTotalAssignment += 1;
+                            temBudget += a.budget;
+                            temElapsed += a.elapsed;
+                            temEfficiency = (temBudget/(temElapsed/3600))    
+                            // console.log("ini hasilnya "+tempDate)
+
+                        }
+                        // var sumBudget = assignments.reduce(function(last, d) {
+                        //     return d.budget + last;
+                        // }, 0);
+                    }
+                    budget.push(temBudget);
+                    elapsed.push(((temElapsed)/3600).toFixed(2));
+                    totalAssignment.push(temTotalAssignment)
+                    efficiency.push(temEfficiency);
+                }
+            
+                var data = {
+                "days":days,
+                "value":
+                    {
+                        "budget":budget,
+                        "elapsed":elapsed,
+                        "efficiency":efficiency
+                    },
+                "totalAssignment":totalAssignment    
+            }
+            cb(null, data);
+        }
+        }) 
+    };
+    Report.remoteMethod("getDataInThisMonth",
+    {
+        accepts: [{ arg: 'account_id', type: 'string'}],
+        http: { path:"/account/:account_id/data/this_months", verb: "get", errorStatus: 401,},
+        description: ["Get data untuk chart sebulan terakhir."],
+        returns: {arg: "data", type: "object",root:"true"}
+    })
+    
 
 
 
