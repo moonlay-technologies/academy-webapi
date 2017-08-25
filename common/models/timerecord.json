@@ -23,10 +23,19 @@
     },
     "remark": {
       "type": "string"
+    },
+    "status": {
+      "type": "string"
     }
   },
   "validations": [],
-  "relations": {},
+  "relations": {
+    "assignment": {
+      "type": "belongsTo",
+      "model": "Assignment",
+      "foreignKey": "timerecordId"
+    }
+  },
   "acls": [],
   "methods": {}
 }
