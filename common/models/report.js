@@ -971,6 +971,7 @@ module.exports = function(Report) {
             console.log(date.getDate());
             var temDuration = 0 ;
                 for(var i = 1;i<=daysInMonths;i++){
+                    var temDuration = 0 ;
                     days.push(""+i);                    
                     for(var a of timerecords){
                         var tempDate = new Date(a.date);
