@@ -939,71 +939,74 @@ module.exports = function(Report) {
         returns: {arg: "data", type: "object",root:"true"}
     })
 
-    Report.getWorkHoursInThisMonth = function(account_id,cb){
-        var date = new Date();
-        var end_date = new Date(date);
-        var daysInMonths = new Date(date.getFullYear(),date.getMonth(),0).getDate();
-        end_date.setDate(daysInMonths);
-        var start_date = new Date();
-        start_date.setDate(1);
-        app.models.Timerecord.find (
-            {
-                include:{
-                    relation:'assignment',
-                    scope:{
-                        accountId: account_id
-                    }
-                },
-                where:
-                {
-                    date:
-                    {
-                        between: [start_date, end_date]
-                    }
-                }    
-            },
-            function(err, timerecords){
-        if(err || account_id === 0)
-            return cb(err);
-        else {
-            var days = []
-            var duration = [];
-            console.log(date.getDate());
-            var temDuration = 0 ;
-                for(var i = 1;i<=daysInMonths;i++){
-                    var temDuration = 0 ;
-                    days.push(""+i);                    
-                    for(var a of timerecords){
-                        var tempDate = new Date(a.date);
-                        console.log(tempDate);
-                        if(tempDate.getDate()==i){
-                            console.log("tanggal : "+i )
-                            temDuration += a.duration;
-                        }
-                    }
-                    if(i<=date.getDate())
-                        {
-                            duration.push(temDuration);
-                        }
-                }
-                var data = {
-                "horizontal":days,
-                "value":
-                    {
-                        "duration":duration,
-                    },
-            }
-            cb(null, data);
-        }
-        }) 
-    };
-    Report.remoteMethod("getWorkHoursInThisMonth",
-    {
-        accepts: [{ arg: 'account_id', type: 'string'}],
-        http: { path:"/account/:account_id/workHours/this_months", verb: "get", errorStatus: 401,},
-        description: ["Get jumlah jam kerja setiap hari untuk chart sebulan terakhir."],
-        returns: {arg: "data", type: "object",root:"true"}
-    })
+
+    //belum selesai
+    // Report.getWorkHoursInThisMonth = function(account_id,cb){
+    //     var date = new Date();
+    //     var end_date = new Date(date);
+    //     var daysInMonths = new Date(date.getFullYear(),date.getMonth(),0).getDate();
+    //     end_date.setDate(daysInMonths);
+    //     var start_date = new Date();
+    //     start_date.setDate(1);
+    //     app.models.Timerecord.find (
+    //         {
+    //             include:{
+    //                 relation:'assignment',
+    //                 scope:{
+    //                     where:{
+    //                     accountId: account_id}
+    //                 }
+    //             },
+    //             where:
+    //             {
+    //                 date:
+    //                 {
+    //                     between: [start_date, end_date]
+    //                 }
+    //             }    
+    //         },
+    //         function(err, timerecords){
+    //     if(err || account_id === 0)
+    //         return cb(err);
+    //     else {
+    //         var days = []
+    //         var duration = [];
+    //         console.log(date.getDate());
+    //             for(var i = 1;i<=daysInMonths;i++){
+    //                 var temDuration = 0 ;
+    //                 days.push(""+i);                    
+    //                 for(var a of timerecords){
+    //                     console.log(a.assignment.accountId)
+    //                     var tempDate = new Date(a.date);
+    //                     console.log(tempDate);
+    //                     if(tempDate.getDate()==i){
+    //                         console.log("tanggal : "+i )
+    //                         temDuration += a.duration;
+    //                     }
+    //                 }
+    //                 if(i<=date.getDate())
+    //                     {
+    //                         duration.push((temDuration/3600));
+    //                     }
+    //             }
+    //             var data = {
+    //             "horizontal":days,
+    //             "value":
+    //                 {
+    //                     "duration":duration,
+    //                 },
+    //         }
+    //         cb(null, data);
+    //     }
+    //     }) 
+    // };
+    // Report.remoteMethod("getWorkHoursInThisMonth",
+    // {
+    //     accepts: [{ arg: 'account_id', type: 'string'}],
+    //     http: { path:"/account/:account_id/workHours/this_months", verb: "get", errorStatus: 401,},
+    //     description: ["Get jumlah jam kerja setiap hari untuk chart sebulan terakhir."],
+    //     returns: {arg: "data", type: "object",root:"true"}
+    // })
     //<<<<<<<<<<<<<<<<<<<<<<<<<<hingga di sini untuk data di chart<<<<
 };
 
