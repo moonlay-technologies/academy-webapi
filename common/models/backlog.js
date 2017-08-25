@@ -28,9 +28,11 @@ module.exports = function (Backlog) {
       var totalPromise = app.models.Task.count( {backlogId : id});
       Promise.all([backlogPromise, closedPromise, totalPromise]).then(results => {
             var backlog = results[0];
-            backlog.closedTask = results[1];
-            backlog.totalTask = results[2];
-            var result = backlog.closedTask / backlog.totalTask * 100;
+            backlog.complete = results[1];
+            backlog.total = results[2];
+            var result = 0;
+            if(backlog.total != 0)
+              result = backlog.complete / backlog.total * 100;
             backlog.progress = result.toFixed(2);
             cb(null, backlog);
         });
