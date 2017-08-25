@@ -167,18 +167,39 @@ module.exports = function(Report) {
             return cb(err);
         else {
             var efficiency;
-            var sumElapsed = assignments.reduce(function(last, d) {
-                return d.elapsed + last;
+            var sum = assignments.reduce(function(last, d) 
+            {  
+                if(d.status=='closed'){
+                    return 1 + last;
+                }else {
+                    return 0+last;
+                }     
+            }, 0);
+            var sumElapsed = assignments.reduce(function(last, d) 
+            {   
+                if(d.status=='closed'){
+                    return d.elapsed + last;
+                }else {
+                    return 0+last;
+                }   
             }, 0);
             var sumBudget = assignments.reduce(function(last, d) {
-                return d.budget + last;
+                if(d.status=='closed'){
+                    return d.budget + last;
+                }else {
+                    return 0+last;
+                }
             }, 0);
+
             if(sumBudget!=0&&sumElapsed!=0){
                 efficiency = ((sumBudget/(sumElapsed/3600))*100).toFixed(2);
             }else{
                 efficiency = " - "
             }
-            cb(null, efficiency);
+            console.log("count "+sum);
+            console.log("effisiensi "+efficiency);
+            efficiency = efficiency/sum;
+            cb(null, efficiency.toFixed(2));
         }
         }) 
     };
@@ -187,7 +208,7 @@ module.exports = function(Report) {
     {
         accepts: [{ arg: 'account_id', type: 'string'}],
         http: { path:"/account/:account_id/assignments/efficiency/", verb: "get", errorStatus: 401,},
-        description: ["Mengambil efisiensi setiap akun pada semua assignments."],
+        description: ["Mengambil rata-rata efisiensi setiap akun pada semua assignments."],
         returns: {arg: "efficiency", type: "object",root:true}
     })
 
@@ -209,19 +230,40 @@ module.exports = function(Report) {
         if(err || account_id === 0)
             return cb(err);
         else {
-            var sumElapsed = assignments.reduce(function(last, d) {
-                return d.elapsed + last;
+            var efficiency;
+            var sum = assignments.reduce(function(last, d) 
+            {  
+                if(d.status=='closed'){
+                    return 1 + last;
+                }else {
+                    return 0+last;
+                }     
+            }, 0);
+            var sumElapsed = assignments.reduce(function(last, d) 
+            {   
+                if(d.status=='closed'){
+                    return d.elapsed + last;
+                }else {
+                    return 0+last;
+                }   
             }, 0);
             var sumBudget = assignments.reduce(function(last, d) {
-                return d.budget + last;
+                if(d.status=='closed'){
+                    return d.budget + last;
+                }else {
+                    return 0+last;
+                }
             }, 0);
-            var efficiency = 0;
-            if((sumBudget!=null&&sumBudget!=0) && (sumElapsed!=null&&sumElapsed!=0)){
-                efficiency = (((sumBudget)/(sumElapsed/3600))*100).toFixed(2);
+
+            if(sumBudget!=0&&sumElapsed!=0){
+                efficiency = ((sumBudget/(sumElapsed/3600))*100).toFixed(2);
             }else{
-                efficiency = "-";
+                efficiency = " - "
             }
-            cb(null, efficiency);
+            console.log("count "+sum);
+            console.log("effisiensi "+efficiency);
+            efficiency = efficiency/sum;
+            cb(null, efficiency.toFixed(2));
         }
         }) 
     };
@@ -687,12 +729,16 @@ module.exports = function(Report) {
     })
 
     ///////////////////////////dipanggil untuk data di chart///////////////////////////////////////////////
-    Report.getDataInLatestSixMonths = function(account_id,date_start,cb){
-        var date = new Date(date_start);
-        var end_date = new Date(date_start);
+    Report.getDataInLatestSixMonths = function(account_id,today,cb){
+        var date = new Date(today);
+        var end_date = new Date();
+        end_date.setDate(new Date(date.getFullYear(),date.getMonth(),0).getDate())
+        end_date.setHours((((end_date.getHours()+(end_date.getTimezoneOffset()/-60))+(23-(end_date.getTimezoneOffset()/-60)))),59,59,0);
+        var difference  = date.getMonth()-5; 
+        var start_date = new Date(date.getFullYear(),date.getMonth()-5,1);
+        // start_date.setHours((((start_date.getHours()+(start_date.getTimezoneOffset()/-60)))),59,59,0);
+        console.log(start_date);
 
-        date.setMonth(date.getMonth()-5);
-        var start_date = date;
 
         app.models.Assignment.find (
             {
@@ -705,6 +751,7 @@ module.exports = function(Report) {
         if(err || account_id === 0)
             return cb(err);
         else {
+
             var monthNames = ["January", "February", "March", "April", "May", "June",
                 "July", "August", "September", "October", "November", "December"];
             var months=[];
@@ -712,37 +759,75 @@ module.exports = function(Report) {
             var elapsed = [];
             var totalAssignment = [];
             var efficiency = [];
+            console.log("start : "+start_date.getMonth()+"\n end : "+end_date.getMonth());
+                var today = new Date();
+                var d;
+                var month;
 
-                // console.log("start : "+start_date.getMonth()+"\n end : "+end_date.getMonth());
+                // for(var i = 5; i >= 0; i -= 1) {
+                // if(i = 5){d = new Date(today.getFullYear(), today.getMonth() - i,);}
+                // else{
 
-                for(var i = start_date.getMonth();i<=end_date.getMonth();i++){
-                    months.push(monthNames[i]);
-                    var temBudget = 0 ;
-                    var temElapsed = 0;
-                    var temTotalAssignment = 0;
-                    var temEfficiency = 0;
-                    for(var a of assignments){
-                        var tempDate = new Date(a.date);
-                        if(tempDate.getMonth()==i){
-                            temTotalAssignment += 1;
-                            temBudget += a.budget;
-                            temElapsed += a.elapsed;
-                            temEfficiency = (temBudget/(temElapsed/3600))    
-                            // console.log("ini hasilnya "+tempDate)
+                // }
+                // console.log(d.getFullYear()+" "+d.getDate())
+                // month = monthNames[d.getMonth()];
+                // months.push(month);
+                // }
+                if(difference<0){
+                    for(var i = start_date.getMonth();i<=end_date.getMonth();i++){
+                        months.push(""+monthNames[i]+" "+start_date.getFullYear());
+                        var temBudget = 0 ;
+                        var temElapsed = 0;
+                        var temTotalAssignment = 0;
+                        var temEfficiency = 0;
+                        for(var a of assignments){
+                            var tempDate = new Date(a.date);
+                            if(tempDate.getMonth()==i){
+                                temTotalAssignment += 1;
+                                temBudget += a.budget;
+                                temElapsed += a.elapsed;
+                                temEfficiency = (temBudget/(temElapsed/3600))    
+                                // console.log("ini hasilnya "+tempDate)
 
+                            }
+                            // var sumBudget = assignments.reduce(function(last, d) {
+                            //     return d.budget + last;
+                            // }, 0);
                         }
-                        // var sumBudget = assignments.reduce(function(last, d) {
-                        //     return d.budget + last;
-                        // }, 0);
-                    }
-                    budget.push(temBudget);
-                    elapsed.push(((temElapsed)/3600).toFixed(2));
-                    totalAssignment.push(temTotalAssignment)
-                    efficiency.push(temEfficiency);
+                        budget.push(temBudget);
+                        elapsed.push(((temElapsed)/3600).toFixed(2));
+                        totalAssignment.push(temTotalAssignment)
+                        efficiency.push(temEfficiency);
+                    }   
                 }
+                // for(var i = start_date.getMonth();i<=end_date.getMonth();i++){
+                //     months.push(""+monthNames[i]+" "+start_date.getFullYear());
+                //     var temBudget = 0 ;
+                //     var temElapsed = 0;
+                //     var temTotalAssignment = 0;
+                //     var temEfficiency = 0;
+                //     for(var a of assignments){
+                //         var tempDate = new Date(a.date);
+                //         if(tempDate.getMonth()==i){
+                //             temTotalAssignment += 1;
+                //             temBudget += a.budget;
+                //             temElapsed += a.elapsed;
+                //             temEfficiency = (temBudget/(temElapsed/3600))    
+                //             // console.log("ini hasilnya "+tempDate)
+
+                //         }
+                //         // var sumBudget = assignments.reduce(function(last, d) {
+                //         //     return d.budget + last;
+                //         // }, 0);
+                //     }
+                //     budget.push(temBudget);
+                //     elapsed.push(((temElapsed)/3600).toFixed(2));
+                //     totalAssignment.push(temTotalAssignment)
+                //     efficiency.push(temEfficiency);
+                // }
             
                 var data = {
-                "months":months,
+                "horizontal":months,
                 "value":
                     {
                         "budget":budget,
@@ -757,18 +842,22 @@ module.exports = function(Report) {
     };
     Report.remoteMethod("getDataInLatestSixMonths",
     {
-        accepts: [{ arg: 'account_id', type: 'string'},{ arg: 'date_start', type: 'string'}],
-        http: { path:"/account/:account_id/:date_start/data/sixmonths", verb: "get", errorStatus: 401,},
+        accepts: [{ arg: 'account_id', type: 'string'},{arg: 'today',type:'string'}],
+        http: { path:"/account/:account_id/:today/data/sixmonths", verb: "get", errorStatus: 401,},
         description: ["Get data untuk line chart per enam bulan terakhir."],
         returns: {arg: "data", type: "object",root:"true"}
     })
+    // ^^
+    // ||
+    //<<< belum selesai
+
 
     Report.getDataInThisMonth = function(account_id,cb){
         var date = new Date();
         var end_date = new Date(date);
-        end_date.setDate(date.getDate());
-
-        var start_date = date;
+        var daysInMonths = new Date(date.getFullYear(),date.getMonth(),0).getDate();
+        end_date.setDate(daysInMonths);
+        var start_date = new Date();
         start_date.setDate(1);
         app.models.Assignment.find (
             {
@@ -782,44 +871,54 @@ module.exports = function(Report) {
             return cb(err);
         else {
             var days = []
-            var monthNames = ["January", "February", "March", "April", "May", "June",
-                "July", "August", "September", "October", "November", "December"];
-            var months=[];
             var budget = [];
             var elapsed = [];
             var totalAssignment = [];
             var efficiency = [];
+            console.log(date.getDate());
+            var temBudget = 0 ;
+            var temElapsed = 0;
+            var temTotalAssignment = 0;
+            var temEfficiency = 0;
 
-                // console.log("start : "+start_date.getMonth()+"\n end : "+end_date.getMonth());
+                for(var i = 1;i<=daysInMonths;i++){
 
-                for(var i = 1;i<=date.getDate();i++){
                     days.push(""+i);
-                    var temBudget = 0 ;
-                    var temElapsed = 0;
-                    var temTotalAssignment = 0;
-                    var temEfficiency = 0;
+                    var closedDate;
+                    
                     for(var a of assignments){
                         var tempDate = new Date(a.date);
+                        closedDate = new Date(a.closedDate);
+                        console.log(closedDate.getDate());
+
+                        if(closedDate.getDate()==i){
+                            console.log("tanggal tutup : "+i)
+                              
+                            temTotalAssignment -= 1;
+                            temBudget -= a.budget;
+                            temElapsed -= (a.elapsed/3600);
+                            // temEfficiency = (a.budget/(a.elapsed/3600))  
+                            
+                        }
                         if(tempDate.getDate()==i){
+                            console.log("tanggal : "+i )
                             temTotalAssignment += 1;
                             temBudget += a.budget;
-                            temElapsed += a.elapsed;
-                            temEfficiency = (temBudget/(temElapsed/3600))    
-                            // console.log("ini hasilnya "+tempDate)
-
+                            temElapsed += (a.elapsed/3600); 
+                            // temEfficiency = 0
                         }
-                        // var sumBudget = assignments.reduce(function(last, d) {
-                        //     return d.budget + last;
-                        // }, 0);
                     }
-                    budget.push(temBudget);
-                    elapsed.push(((temElapsed)/3600).toFixed(2));
-                    totalAssignment.push(temTotalAssignment)
-                    efficiency.push(temEfficiency);
+                    if(i<=date.getDate())
+                        {
+                            budget.push(temBudget);
+                            elapsed.push(temElapsed);
+                            efficiency.push(temEfficiency);
+                            totalAssignment.push(temTotalAssignment)
+                        }
                 }
             
                 var data = {
-                "days":days,
+                "horizontal":days,
                 "value":
                     {
                         "budget":budget,
@@ -839,10 +938,72 @@ module.exports = function(Report) {
         description: ["Get data untuk chart sebulan terakhir."],
         returns: {arg: "data", type: "object",root:"true"}
     })
-    
 
-
-
+    Report.getWorkHoursInThisMonth = function(account_id,cb){
+        var date = new Date();
+        var end_date = new Date(date);
+        var daysInMonths = new Date(date.getFullYear(),date.getMonth(),0).getDate();
+        end_date.setDate(daysInMonths);
+        var start_date = new Date();
+        start_date.setDate(1);
+        app.models.Timerecord.find (
+            {
+                include:{
+                    relation:'assignment',
+                    scope:{
+                        accountId: account_id
+                    }
+                },
+                where:
+                {
+                    date:
+                    {
+                        between: [start_date, end_date]
+                    }
+                }    
+            },
+            function(err, timerecords){
+        if(err || account_id === 0)
+            return cb(err);
+        else {
+            var days = []
+            var duration = [];
+            console.log(date.getDate());
+            var temDuration = 0 ;
+                for(var i = 1;i<=daysInMonths;i++){
+                    days.push(""+i);                    
+                    for(var a of timerecords){
+                        var tempDate = new Date(a.date);
+                        console.log(tempDate);
+                        if(tempDate.getDate()==i){
+                            console.log("tanggal : "+i )
+                            temDuration += a.duration;
+                        }
+                    }
+                    if(i<=date.getDate())
+                        {
+                            duration.push(temDuration);
+                        }
+                }
+                var data = {
+                "horizontal":days,
+                "value":
+                    {
+                        "duration":duration,
+                    },
+            }
+            cb(null, data);
+        }
+        }) 
+    };
+    Report.remoteMethod("getWorkHoursInThisMonth",
+    {
+        accepts: [{ arg: 'account_id', type: 'string'}],
+        http: { path:"/account/:account_id/workHours/this_months", verb: "get", errorStatus: 401,},
+        description: ["Get jumlah jam kerja setiap hari untuk chart sebulan terakhir."],
+        returns: {arg: "data", type: "object",root:"true"}
+    })
+    //<<<<<<<<<<<<<<<<<<<<<<<<<<hingga di sini untuk data di chart<<<<
 };
 
  
