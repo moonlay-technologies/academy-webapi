@@ -276,7 +276,6 @@ module.exports = function(Report) {
     })
 
 
-    ///////////////////////////////////////////////////////////////////////////////////////////////
     Report.getAssignmentsPerDate = function(account_id,date_start,date_end,cb){
         
         var start_time = new Date(date_start);
@@ -349,8 +348,7 @@ module.exports = function(Report) {
     })
 
 
-    ///////////////////////////////////////////count closed and open assignment by date/////////////////////////////////////////////////////////////////////
-    ////////////////////<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+    //count closed and open assignment by date
     Report.countClosedAssignmentsPerDate = function(account_id,date_start,date_end,cb){
         var start_time = new Date(date_start);
         var end_time = new Date(date_end);
@@ -414,8 +412,7 @@ module.exports = function(Report) {
         returns: {arg: "Count", type: "object",root: true}
     })
 
-    /////////////////////////////////////////////budget and elapsed by date//////////////////////////////////////////////////////////////////
-    /////////////////////////////////////>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+    //budget and elapsed by date
     Report.getBudgetPerDate = function(account_id,date_start,date_end,cb){
         var start_time = new Date(date_start);
         var end_time = new Date(date_end);
@@ -487,8 +484,6 @@ module.exports = function(Report) {
         returns: {arg: "Elapsed time", type: "object",root: true}
     })  
 
-    //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-    //////////////////////////////////////////////////////////////////////////////////////////////////////////
     Report.getProjectperAccount = function(account_id,cb){
         app.models.Assignment.find(
             {
@@ -604,7 +599,6 @@ module.exports = function(Report) {
         returns: {arg: "Projects", type: "object",root:true}
     })
 
-//get assignment project account
     Report.getAssignmentInProject = function(account_id,project_id,cb){
         app.models.Assignment.find({include:"task",where:{accountId: account_id}},function(err, assignments){
         if(err || account_id === 0)
@@ -728,130 +722,7 @@ module.exports = function(Report) {
         returns: {arg: "coumnt", type: "object",root: true}
     })
 
-    ///////////////////////////dipanggil untuk data di chart///////////////////////////////////////////////
-    Report.getDataInLatestSixMonths = function(account_id,today,cb){
-        var date = new Date(today);
-        var end_date = new Date();
-        end_date.setDate(new Date(date.getFullYear(),date.getMonth(),0).getDate())
-        end_date.setHours((((end_date.getHours()+(end_date.getTimezoneOffset()/-60))+(23-(end_date.getTimezoneOffset()/-60)))),59,59,0);
-        var difference  = date.getMonth()-5; 
-        var start_date = new Date(date.getFullYear(),date.getMonth()-5,1);
-        // start_date.setHours((((start_date.getHours()+(start_date.getTimezoneOffset()/-60)))),59,59,0);
-        console.log(start_date);
-
-
-        app.models.Assignment.find (
-            {
-                where:
-                {accountId: account_id,
-            date:{
-                between: [start_date, end_date]
-            }}},
-            function(err, assignments){
-        if(err || account_id === 0)
-            return cb(err);
-        else {
-
-            var monthNames = ["January", "February", "March", "April", "May", "June",
-                "July", "August", "September", "October", "November", "December"];
-            var months=[];
-            var budget = [];
-            var elapsed = [];
-            var totalAssignment = [];
-            var efficiency = [];
-            console.log("start : "+start_date.getMonth()+"\n end : "+end_date.getMonth());
-                var today = new Date();
-                var d;
-                var month;
-
-                // for(var i = 5; i >= 0; i -= 1) {
-                // if(i = 5){d = new Date(today.getFullYear(), today.getMonth() - i,);}
-                // else{
-
-                // }
-                // console.log(d.getFullYear()+" "+d.getDate())
-                // month = monthNames[d.getMonth()];
-                // months.push(month);
-                // }
-                if(difference<0){
-                    for(var i = start_date.getMonth();i<=end_date.getMonth();i++){
-                        months.push(""+monthNames[i]+" "+start_date.getFullYear());
-                        var temBudget = 0 ;
-                        var temElapsed = 0;
-                        var temTotalAssignment = 0;
-                        var temEfficiency = 0;
-                        for(var a of assignments){
-                            var tempDate = new Date(a.date);
-                            if(tempDate.getMonth()==i){
-                                temTotalAssignment += 1;
-                                temBudget += a.budget;
-                                temElapsed += a.elapsed;
-                                temEfficiency = (temBudget/(temElapsed/3600))    
-                                // console.log("ini hasilnya "+tempDate)
-
-                            }
-                            // var sumBudget = assignments.reduce(function(last, d) {
-                            //     return d.budget + last;
-                            // }, 0);
-                        }
-                        budget.push(temBudget);
-                        elapsed.push(((temElapsed)/3600).toFixed(2));
-                        totalAssignment.push(temTotalAssignment)
-                        efficiency.push(temEfficiency);
-                    }   
-                }
-                // for(var i = start_date.getMonth();i<=end_date.getMonth();i++){
-                //     months.push(""+monthNames[i]+" "+start_date.getFullYear());
-                //     var temBudget = 0 ;
-                //     var temElapsed = 0;
-                //     var temTotalAssignment = 0;
-                //     var temEfficiency = 0;
-                //     for(var a of assignments){
-                //         var tempDate = new Date(a.date);
-                //         if(tempDate.getMonth()==i){
-                //             temTotalAssignment += 1;
-                //             temBudget += a.budget;
-                //             temElapsed += a.elapsed;
-                //             temEfficiency = (temBudget/(temElapsed/3600))    
-                //             // console.log("ini hasilnya "+tempDate)
-
-                //         }
-                //         // var sumBudget = assignments.reduce(function(last, d) {
-                //         //     return d.budget + last;
-                //         // }, 0);
-                //     }
-                //     budget.push(temBudget);
-                //     elapsed.push(((temElapsed)/3600).toFixed(2));
-                //     totalAssignment.push(temTotalAssignment)
-                //     efficiency.push(temEfficiency);
-                // }
-            
-                var data = {
-                "horizontal":months,
-                "value":
-                    {
-                        "budget":budget,
-                        "elapsed":elapsed,
-                        "efficiency":efficiency
-                    },
-                "totalAssignment":totalAssignment    
-            }
-            cb(null, data);
-        }
-        }) 
-    };
-    Report.remoteMethod("getDataInLatestSixMonths",
-    {
-        accepts: [{ arg: 'account_id', type: 'string'},{arg: 'today',type:'string'}],
-        http: { path:"/account/:account_id/:today/data/sixmonths", verb: "get", errorStatus: 401,},
-        description: ["Get data untuk line chart per enam bulan terakhir."],
-        returns: {arg: "data", type: "object",root:"true"}
-    })
-    // ^^
-    // ||
-    //<<< belum selesai
-
-
+    ///dipanggil untuk data di chart
     Report.getDataInThisMonth = function(account_id,cb){
         var date = new Date();
         var end_date = new Date(date);
