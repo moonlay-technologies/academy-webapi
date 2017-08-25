@@ -2,6 +2,7 @@
 var app = require('../../server/server');
 var codeGenerator = require("../utils/code-generator");
 
+
 module.exports = function (Assignment) {
     Assignment.assignmentProgress = function (id, cb) {
         app.models.Assignment.findById(id, { include: 'timerecords' },
@@ -10,9 +11,12 @@ module.exports = function (Assignment) {
                     return cb(err);
                 else {
                     var totalPersentasi = 0.0;
+                    var totalDuration = 0.0;
                     if (assignments.budget != 0)
                         totalPersentasi = ((assignments.elapsed / (assignments.budget * 3600)) * 100);
-                    totalPersentasi = totalPersentasi.toFixed(2);
+
+                    totalPersentasi = totalPersentasi.toFixed(4);
+                    // console.log("Total Persentasi : "+ totalPersentasi);
                     cb(null, totalPersentasi);
                 };
             });
@@ -47,19 +51,26 @@ module.exports = function (Assignment) {
                         keterangan = "Expired"
                         cb(null, keterangan)
 
-                    }
-                    else {
-                        var days = Math.floor(distance / _day);
-                        var hours = Math.floor((distance % _day) / _hour);
-                        var minutes = Math.floor((distance % _hour) / _minute);
-                        var seconds = Math.floor((distance % _minute) / _second);
-                        if (days < 1) {
-                            keterangan = hours + " " + "hours" + " " +minutes + " " + "minutes" + " "+ "more"
-                            cb(null, keterangan)
-                        } else {
-                            keterangan = days + " " + "days" + " " + hours + " " + "hours" + " " + "more"
-                            cb(null, keterangan)
-                        }
+    Assignment.assignmentSubtraction = function (id, cb) {
+        app.models.Assignment.findById(id, { include: 'timerecords' },
+            function (err, assignments) {
+                if (err)
+                    return cb(err);
+                else {
+                    var diffDays = 0.0;
+                    var totalDeadline = 0.0;
+                    var date2 = assignments.deadline;
+                    var date = new Date();
+                    var time = 0.0;
+                    if (assignments.deadline != 0) {
+                        totalDeadline = Math.abs(date2 - date);
+                        diffDays = Math.ceil(totalDeadline / (3600 * 1000 * 24)) + "" + " days more";
+                        time = Math.ceil(diffDays * 8);
+                        console.log("Deadline:" + diffDays)
+                        console.log("Time :" + time)
+                        console.log("id: " + assignments.id)
+                        cb(null, diffDays);
+                        //cb(null, time);
                     }
                 };
             });
@@ -73,41 +84,25 @@ module.exports = function (Assignment) {
                 arg: 'id', type: 'string', required: true
             },
             http: { path: '/:id/subtraction', verb: "get", errorStatus: 401 },
-            returns: { arg: "Subtraction", type: "date" }
+            returns: { arg: "Subtraction", type: "object" }
         });
 
-    Assignment.getElapsed = function (id, cb) {
-        app.models.Timerecord.find({ where: { assignmentId: id } },
-            function (err, timerecords) {
+    Assignment.validatesUniquenessOf('code', { message: 'code already exists' });
+
+
+    Assignment.observe("before save", (context, next) => {
+        var Backlog = app.models.Backlog;
+        var data = context.instance || context.data;
+
+        if (context.isNewInstance) {
+            data.code = codeGenerator();
+            Backlog.findById(data.backlogId, (err, backlog) => {
                 if (err)
-                    return cb(err);
-                else {
-                    var sum = timerecords.reduce(function (last, d) {
-                        return d.duration + last;
-                    }, 0);
-                    cb(null, sum);
-                }
+                    return next(err);
+                data.backlogId = backlog.id;
+                data.projectId = backlog.projectId;
             })
-    }
-
-
-    Assignment.remoteMethod("getElapsed", {
-        accepts:
-        {
-            arg: 'id',
-            type: 'string',
-            required: true
-        },
-        http:
-        {
-            path: '/:id/elapsed',
-            verb: "get",
-            errorStatus: 401
-        },
-        returns:
-        {
-            arg: "Elapsed",
-            type: "decimal"
         }
+        next();
     })
 };

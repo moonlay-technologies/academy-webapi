@@ -29,7 +29,13 @@
     }
   },
   "validations": [],
-  "relations": {},
+  "relations": {
+    "assignment": {
+      "type": "belongsTo",
+      "model": "Assignment",
+      "foreignKey": "timerecordId"
+    }
+  },
   "acls": [],
   "methods": {}
 }
