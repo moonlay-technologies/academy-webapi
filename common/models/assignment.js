@@ -1,6 +1,3 @@
-
-
-
 'use strict';
 var app = require('../../server/server');
 var codeGenerator = require("../utils/code-generator");
@@ -25,7 +22,6 @@ module.exports = function (Assignment) {
             });
 
     };
-
     Assignment.remoteMethod("assignmentProgress",
         {
             accepts:
@@ -35,8 +31,25 @@ module.exports = function (Assignment) {
             http: { path: '/:id/persentasi', verb: "get", errorStatus: 401 },
             returns: { arg: "Persentasi", type: "object" }
         });
-
-
+    Assignment.assignmentSubtraction = function (id, cb) {
+        app.models.Assignment.findById(id, { include: 'timerecords' },
+            function (err, assignments) {
+                if (err)
+                    return cb(err);
+                else {
+                    var diffDays = 0.0;
+                    var distance = 0.0;
+                    var end = new Date(assignments.deadline)//assignments.deadline
+                    var _second = 1000;
+                    var _minute = _second * 60;
+                    var _hour = _minute * 60;
+                    var _day = _hour * 24;
+                    var now = new Date()
+                    var keterangan = 0.0;
+                    distance = (end - now);
+                    if (distance < 0) {
+                        keterangan = "Expired"
+                        cb(null, keterangan)
 
     Assignment.assignmentSubtraction = function (id, cb) {
         app.models.Assignment.findById(id, { include: 'timerecords' },
